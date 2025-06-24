@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge.jsx'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import './App.css'
 
-const API_BASE_URL = 'https://77h9ikcj6np9.manus.space/api'
+const API_BASE_URL = 'https://bear-detection-backend.onrender.com/api'
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null)
