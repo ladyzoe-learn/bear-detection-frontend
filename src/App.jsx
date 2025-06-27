@@ -63,45 +63,42 @@ function App() {
     setRecentDetections(mockDetections)
   }
 
-  const handleFileSelect = (event) => {
-    const file = event.target.files[0]
-    setSelectedFile(file)
-    setDetectionResult(null)
-  }
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-  const handleUpload = async () => {
-    if (!selectedFile) return
+    setOriginalImage(URL.createObjectURL(file));
+    setDetectedImage(null);
+    setDetections([]);
+    setLoading(true);
+    setError(null);
 
-    setIsUploading(true)
-    const formData = new FormData()
-    formData.append('image', selectedFile)
-    formData.append('camera_id', 'camera_001')
-    formData.append('location', '台東縣海端鄉')
+    const formData = new FormData();
+    formData.append("file", file);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/detect`, {
-        method: 'POST',
-        body: formData
-      })
-      const data = await response.json()
-      setDetectionResult(data)
-      
-      // 如果偵測到黑熊，重新載入統計資料
-      if (data.bear_detected) {
-        fetchStatistics()
-        fetchRecentDetections()
-      }
-    } catch (error) {
-      console.error('上傳失敗:', error)
-      setDetectionResult({
-        success: false,
-        error: '上傳失敗，請稍後再試'
-      })
-    } finally {
-      setIsUploading(false)
-    }
-  }
+        // **這裡是最重要的修改點！**
+        // 確保這個 URL 指向你的後端 Render 服務
+        const response = await fetch("https://bear-detection-backend.onrender.com/detect-bear/", {
+            method: "POST",
+            body: formData,
+        });
 
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setDetections(data.detections);
+        // ... (後續繪製框線邏輯)
+    } catch (error) {
+        setError(`辨識失敗: ${error.message}`);
+        console.error("Error during detection:", error);
+    } finally {
+        setLoading(false);
+    }
+};
   const formatDateTime = (dateString) => {
     return new Date(dateString).toLocaleString('zh-TW')
   }
